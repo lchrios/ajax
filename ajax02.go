@@ -9,15 +9,18 @@ import (
 )
 
 type book struct {
-	Titulo string `json: titulo`
-	Autor  string `json: autor`
+	Titulo string
+	Autor  string
 }
+
+// UserData is a struct
 type UserData struct {
 	User    string
 	Mail    string
 	Lastcon string
 }
 
+//SendUser is a struct
 type SendUser struct {
 	User    bool
 	Mail    bool
@@ -25,24 +28,24 @@ type SendUser struct {
 }
 
 var data = [4]UserData{
-	UserData{"Nick", "nicks@anymail.com", "02-28-2021 09:38:22"},
-	UserData{"Luis", "luis.eds@anymail.com", "02-27-2021 19:12:02"},
-	UserData{"Chris", "chris@anymail.com", "02-25-2021 12:08:12"},
-	UserData{"Oscar", "the_odb@anymail.com", "02-20-2021 17:58:09"},
+	{"Nick", "nicks@anymail.com", "02-28-2021 09:38:22"},
+	{"Luis", "luis.eds@anymail.com", "02-27-2021 19:12:02"},
+	{"Chris", "chris@anymail.com", "02-25-2021 12:08:12"},
+	{"Oscar", "the_odb@anymail.com", "02-20-2021 17:58:09"},
 }
 
 var changed = [4]SendUser{
-	SendUser{false, false, false},
-	SendUser{false, false, false},
-	SendUser{false, false, false},
-	SendUser{false, false, false},
+	{false, false, false},
+	{false, false, false},
+	{false, false, false},
+	{false, false, false},
 }
 
 var reset = [4]SendUser{
-	SendUser{false, false, false},
-	SendUser{false, false, false},
-	SendUser{false, false, false},
-	SendUser{false, false, false},
+	{false, false, false},
+	{false, false, false},
+	{false, false, false},
+	{false, false, false},
 }
 
 func mostrarHTML(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +66,7 @@ func cliente3(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "cliente3.html")
 }
 
-func vuejs(w http.ResponseWriter, r *http.Request) {
+func vuejsMix(w http.ResponseWriter, r *http.Request) {
 
 	http.ServeFile(w, r, "vue01.html")
 }
@@ -197,7 +200,7 @@ func resetFunc(w http.ResponseWriter, r *http.Request) {
 	changed = reset // Libera los candados al estado original
 }
 
-func main() {
+func main2() {
 
 	http.HandleFunc("/dato", darMensaje)
 	http.HandleFunc("/", mostrarHTML)

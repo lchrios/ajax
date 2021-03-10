@@ -12,20 +12,21 @@ func vuejs(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "vue01.html")
 }
 
+// Film is the struct containing film data
 type Film struct {
-	Title    string `json: title`
-	Director string `json: director`
-	Year     int    `json: year`
+	Title    string
+	Director string
+	Year     int
 }
 
 func sendFilms(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var films = [4]Film{
-		Film{"No Manches Frida 2", "Nacho G. Velilla", 2016},
-		Film{"Star Wars 6", "George Lucas", 1976},
-		Film{"Harry Potter 3", "Alfonso Cuarón", 2002},
-		Film{"Elba lazo", "Gillermo del Toro", 2009},
+		{"No Manches Frida 2", "Nacho G. Velilla", 2016},
+		{"Star Wars 6", "George Lucas", 1976},
+		{"Harry Potter 3", "Alfonso Cuarón", 2002},
+		{"Elba lazo", "Gillermo del Toro", 2009},
 	}
 
 	json.NewEncoder(w).Encode(films)

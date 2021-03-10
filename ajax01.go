@@ -15,7 +15,7 @@ func darMsj(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func main() {
+func mainorg() {
 	http.HandleFunc("/", darMsj)
 	err := http.ListenAndServe("localhost"+":"+"8080", nil)
 	if err != nil {

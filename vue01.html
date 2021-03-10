@@ -128,8 +128,12 @@
 
                 <div class="col-lg-4">
                     <button type="button" class="btn btn-outline-success" v-on:click="getFilms">
-                        <span class="material-icons" style="margin-right: 5px;">update</span><a style="font-size: 18;">UPDATE FILMS</a>
+                        <span class="material-icons" style="margin-right: 5px;">update</span><a style="font-size: 18;">FETCH FILMS</a>
                     </button>
+                    <button type="button" class="btn btn-outline-success btn-sm" v-on:click="getLocalFilms">
+                        <span class="material-icons" style="margin-right: 5px;">backup</span><a style="font-size: 18;">LOAD FILMS</a>
+                    </button>
+                    
                     <table id="film_table" class="table table-hover" style="width: max-content;">
                         <thead>
                             <tr>
@@ -139,7 +143,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(film, i) in ordenarFilms">
+                            <tr v-for="(film, i) in films">
                                 <td>{{ film.Title }}</td>
                                 <td>{{ film.Director }}</td>
                                 <td>{{ film.Year }}</td>
@@ -159,6 +163,109 @@
           //Una instancia de Vue que manejará esa área del documento #lugardetrabajo
         c = new Vue({
             el: "#lugardetrabajo",
+            methods: {
+                getLocalFilms: () => {
+                    this.c.films.push({
+                        Title: "Saving Private Ryan",
+                        Director: "Steven Spielberg",
+                        Year: 1998,
+                    });
+                    this.c.films.push({
+                        Title: "Salvando al Soldado Perez",
+                        Director: "Beto Gómez",
+                        Year: 2011,
+                    });
+                    this.c.films.push({
+                        Title: "The Mandalorean - Season 2",
+                        Director: "Jonh Favreau",
+                        Year: 2021,
+                    });
+                    this.c.films = _.orderBy(this.c.films, ['Year'], ['desc']);
+                },
+                getFilms: async (event) => {
+                    console.log("Cargando info");
+                    if (window.XMLHttpRequest) {
+                        xmlhttp=new XMLHttpRequest();
+                    } else {
+                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+                    }
+
+                    xmlhttp.onreadystatechange = () => {
+                        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                            tmp = JSON.parse(xmlhttp.responseText);
+                            this.c.films = this.c.films.concat(tmp)
+                            this.c.films = _.orderBy(this.c.films, ['Year'], ['desc']);
+                            console.log(this.c.films);
+                            return tmp;
+                        }
+                    }
+
+                    xmlhttp.open("GET","http://localhost:8080/films",true);
+                    xmlhttp.send();
+                },
+                deleteBook: (event, i) =>{
+                    this.c.libros.splice(i,1);
+                },
+                editBook: (event, i) => {
+
+                    this.c.in_author = this.c.libros[i].autor;
+                    this.c.in_title = this.c.libros[i].titulo;
+                    this.c.in_quant = this.c.libros[i].cantidad;
+                    this.c.in_offer = this.c.libros[i].oferta;
+                    this.c.in_edit = this.c.libros[i].editorial;
+                    this.c.edit_mode = true;
+                    this.c.edit_ind = i;
+                },
+                metodo: (event) => {
+
+                    var author = this.c.in_author;
+                    var title = this.c.in_title;
+                    var offer = this.c.in_offe;
+                    var quantity = parseInt(this.c.in_quant);
+                    var editorial = this.c.in_edit;
+
+                    var new_book = true;
+                    for (var i = 0; i < this.c.libros.length; i++) {
+
+                        if (this.c.edit_mode && this.c.edit_ind != undefined && this.c.libros[this.c.edit_ind] == this.c.libros[i]) {
+                            console.log("BORRANDO")
+                            this.c.libros.splice(i,1);
+                            this.c.edit_mode = false;
+                            this.c.edit_ind = undefined;
+                            continue;
+                        }
+
+                        if (this.c.libros[i].autor == author && this.c.libros[i].titulo == title && this.c.libros[i].editorial == editorial) {
+                            // Exact same book just add
+                            new_book = false;
+                            this.c.libros[i] = {
+                                ...this.c.libros[i],
+                                cantidad: this.c.libros[i].cantidad + quantity
+                            } 
+                            console.log(this.c.libros[i].cantidad)     
+                        }
+                    }
+
+                    if (new_book) {
+                        this.c.libros.push({
+                            autor: author,
+                            titulo: title, 
+                            oferta: offer,
+                            cantidad: quantity, 
+                            editorial: editorial
+                        });
+                    }
+                    
+                    document.getElementById("in_author").value="";
+                    document.getElementById("in_title").value="";
+                    document.getElementById("in_offer").checked=false;
+                    document.getElementById("in_quant").value="";
+                    document.getElementById("in_edit").value="";
+                    this.c.edit_mode = false;
+
+                    event.preventDefault();
+                }
+            },
             data: {
                 in_author: "",
                 in_title: "",
@@ -193,97 +300,6 @@
                     }
                 ]
             },
-            methods: {
-                getFilms: (event) => {
-                    console.log("Cargando info");
-                    if (window.XMLHttpRequest) {
-                        xmlhttp=new XMLHttpRequest();
-                    } else {
-                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                    }
-
-                    xmlhttp.onreadystatechange = () => {
-                        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                            tmp = JSON.parse(xmlhttp.responseText);
-                            this.c.films = tmp;
-                            this.c.films = _.orderBy(this.c.films, ['year']);
-                            console.log("computed films", this.c.films);
-                            return this.c.films;
-                        } else if (xmlhttp.readyState == 4) {
-                            console.log(xmlhttp.status);
-                        }
-                    }
-
-                    xmlhttp.open("GET","http://localhost:8080/films",true);
-                    xmlhttp.send();
-                },
-                deleteBook: (event, i) =>{
-                    this.c.libros.splice(i,1);
-                },
-                editBook: (event, i) => {
-
-                    this.c.in_author = this.c.libros[i].autor;
-                    this.c.in_title = this.c.libros[i].titulo;
-                    this.c.in_quant = this.c.libros[i].cantidad;
-                    this.c.in_offer = this.c.libros[i].oferta;
-                    this.c.in_edit = this.c.libros[i].editorial;
-
-                    this.c.edit_mode = true;
-                    this.c.edit_ind = i;
-                },
-                metodo: (event) => {
-                    
-                    
-                    var author = this.c.in_author;
-                    var title = this.c.in_title;
-                    var offer = this.c.in_offe;
-                    var quantity = parseInt(this.c.in_quant);
-                    var editorial = this.c.in_edit;
-
-                    var new_book = true;
-                    for (var i = 0; i < this.c.libros.length; i++) {
-
-                        if (this.c.edit_mode && this.c.edit_ind != undefined && this.c.libros[this.c.edit_ind] == this.c.libros[i]) {
-                            console.log("BORRANDO")
-                            this.c.libros.splice(i,1);
-                            this.c.edit_mode = false;
-                            this.c.edit_ind = undefined;
-                            continue;
-                        }
-
-                        if (this.c.libros[i].autor == author && this.c.libros[i].titulo == title && this.c.libros[i].editorial == editorial) {
-                            // Exact same book just add
-                            new_book = false;
-                            this.c.libros[i] = {
-                                ...this.c.libros[i],
-                                cantidad: this.c.libros[i].cantidad + quantity
-                            } 
-                            console.log(this.c.libros[i].cantidad)     
-                        }
-                    }
-
-                    
-                   
-                    if (new_book) {
-                        this.c.libros.push({
-                            autor: author,
-                            titulo: title, 
-                            oferta: offer,
-                            cantidad: quantity, 
-                            editorial: editorial
-                        });
-                    }
-                    
-                    document.getElementById("in_author").value="";
-                    document.getElementById("in_title").value="";
-                    document.getElementById("in_offer").checked=false;
-                    document.getElementById("in_quant").value="";
-                    document.getElementById("in_edit").value="";
-                    this.c.edit_mode = false;
-
-                    event.preventDefault();
-                }
-            },
             computed: {
                 ordenarLibros: function() {
                     console.log("computed autor");
@@ -295,26 +311,33 @@
                     this.libros = _.orderBy(this.libros, ['cantidad']);
                     return this.libros;
                 },
-                ordenarFilms: () => {
-                    if (window.XMLHttpRequest) {
-                        xmlhttp=new XMLHttpRequest();
-                    } else {
-                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-                    }
+                // films: {
+                //     get: async () => {
+                //         console.log("Generando la peticion...")
+                //         if (window.XMLHttpRequest) {
+                //             xmlhttp = new XMLHttpRequest();
+                //         } else {
+                //             xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                //         }
 
-                    xmlhttp.onreadystatechange = () => {
-                        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                            tmp = JSON.parse(xmlhttp.responseText);
-                            this.c.films = tmp;
-                            this.c.films = _.orderBy(this.c.films, ['year']);
-                            console.log("computed films", this.c.films);
-                            return this.c.films;
-                        }
-                    }
-
-                    xmlhttp.open("GET","http://localhost:8080/films",true);
-                    xmlhttp.send();
-                    
+                //         xmlhttp.open("GET","http://localhost:8080/films",true);
+                //         xmlhttp.send();
+                //         xmlhttp.onreadystatechange = () => {
+                //             console.log("Respuesta a computed", xmlhttp.readyState, xmlhttp.status);
+                //             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                //                 return JSON.parse(xmlhttp.responseText);
+                //             }
+                //         }
+                        
+                //     },
+                //     set: (newFilms) => {
+                //         console.log("NEWDATA:", newFilms)
+                //     },
+                // }, 
+                sortedFilmsYear: () => {
+                    tmp = _.orderBy(this.c.films, ['Year']);
+                    console.log("sorted films", tmp);
+                    return tmp;
                 }
             },
             watch:{
