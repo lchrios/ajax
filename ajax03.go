@@ -8,7 +8,6 @@ import (
 )
 
 func vuejs(w http.ResponseWriter, r *http.Request) {
-
 	http.ServeFile(w, r, "vue01.html")
 }
 
