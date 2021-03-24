@@ -31,7 +31,7 @@ func sendFilms(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(films)
 }
 
-func mainajax03() {
+func main() {
 	http.HandleFunc("/vue", vuejs)
 	http.HandleFunc("/films", sendFilms)
 	fmt.Println(time.Now().Format("02-01-2006 15:04:05"))
